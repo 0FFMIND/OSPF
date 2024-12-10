@@ -1,3 +1,6 @@
+#ifndef NEIGHBOUR_H
+#define NEIGHBOUR_H
+
 #include <iostream>
 #include <chrono>
 
@@ -51,3 +54,5 @@ public:
     };
 
 };
+
+#endif
