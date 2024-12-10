@@ -18,6 +18,7 @@ int main() {
 
         std::cout << "Received Hello packet:" << std::endl;
         std::cout << "  Network Mask: " << std::hex << hello.networkMask << std::endl;
+        std::cout << "  RouterID: " << std::hex << hello.routerID << std::endl;
         std::cout << "  Hello Interval: " << std::dec << hello.helloInterval << " seconds" << std::endl;
         std::cout << "  Router Priority: " << std::dec << hello.routerPriority << std::endl;
         std::cout << "  Dead Interval: " << std::dec << hello.deadInterval << " seconds" << std::endl;

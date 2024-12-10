@@ -7,7 +7,9 @@
 
 
 struct OSPFHello{
+
     uint32_t networkMask;
+    uint32_t routerID;
     uint16_t helloInterval;
     uint16_t routerPriority;
     uint32_t deadInterval;

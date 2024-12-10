@@ -7,6 +7,7 @@ int main() {
     UDPSocket socket(0);
 
     OSPFHello hello = {
+        0x00000000, // RouterID
         0xFFFFFF00, // networkMask
         10,         // helloInterval
         1,          // routerPriority

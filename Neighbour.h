@@ -16,7 +16,6 @@ private:
     uint32_t routerID;
     Neighbour_State state;
     uint16_t priority;
-    std::chrono::steady_clock::time_point lastHelloTime;
 
     static std::string stateToString(Neighbour_State state){
         switch (state)
@@ -38,9 +37,12 @@ private:
     };
 
 public:
+    std::chrono::steady_clock::time_point lastHelloTime;
 
     Neighbour(uint32_t id, uint16_t prio) : routerID(id), state(Down), priority(prio), lastHelloTime(std::chrono::steady_clock::now()){}
 
+    Neighbour() = default;
+    
     std::string getState() const{
         return stateToString(state);
     };
