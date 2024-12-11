@@ -4,6 +4,12 @@
 #include <unistd.h>
 
 #include "OSPFHello.h"
+#include "LSA.h"
+
+enum packet_type{
+    OSPFHELLO_PACKET = 0,
+    LSA_PACKET = 1,
+};
 
 class UDPSocket{
 private:
@@ -62,22 +68,19 @@ public:
 
     // Hello test
     void sendHello(const std::string& ip, uint16_t port, const OSPFHello& hello){
-        std::vector<uint8_t> data = hello.serialize();
+        std::vector<uint8_t> dataBuffer = hello.serialize();
+        std::vector<uint8_t> data(1 + dataBuffer.size());
+        data[0] = OSPFHELLO_PACKET;
+        std::memcpy(data.data() + 1, dataBuffer.data(), dataBuffer.size());
         send(ip, port, std::string(data.begin(), data.end()));
     }
 
-    OSPFHello receiveHello() {
-        std::string data = receive();
-        if (data.empty()) {
-            throw std::runtime_error("Empty data received");
-        }
-        std::cout << "Received data size: " << data.size() << " bytes" << std::endl;
-        std::vector<uint8_t> buffer(data.begin(), data.end());
-        for (const auto& byte : buffer) {
-            std::cout << std::hex << static_cast<int>(byte) << " ";
-        }
-        std::cout << std::endl;
-        return OSPFHello::deserialize(buffer);
+    void sendLSA(const std::string& ip, uint16_t port, const LSA& lsa){
+        std::vector<uint8_t> dataBuffer = lsa.serialize();
+        std::vector<uint8_t> data(1 + dataBuffer.size());
+        data[0] = LSA_PACKET;
+        std::memcpy(data.data() + 1, dataBuffer.data(), dataBuffer.size());
+        send(ip, port, std::string(data.begin(), data.end()));
     }
 
     void joinMulticastGroup(const std::string& multicastIP) {

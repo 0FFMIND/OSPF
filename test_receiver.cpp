@@ -13,8 +13,8 @@ int main() {
     std::cout << "Waiting for Hello packets..." << std::endl;
 
     while (true) {
-        
-        OSPFHello hello = socket.receiveHello();
+        OSPFHello hello;
+        // OSPFHello hello = socket.receiveHello();
 
         std::cout << "Received Hello packet:" << std::endl;
         std::cout << "  Network Mask: " << std::hex << hello.networkMask << std::endl;
