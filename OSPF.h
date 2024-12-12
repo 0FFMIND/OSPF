@@ -9,6 +9,7 @@
 #include <queue>
 #include <algorithm> 
 #include <condition_variable>
+#include <unordered_set>
 
 #include "udp_socket.h"
 #include "Neighbour.h"
@@ -28,6 +29,7 @@ private:
     std::unordered_map<uint32_t, LSA> lsdb;
     std::chrono::steady_clock::time_point lastHelloTime;
     std::chrono::steady_clock::time_point lastLSATime;
+    std::vector<uint32_t> targets;
     UDPSocket socket;
     bool isRunning;
 
@@ -41,11 +43,18 @@ private:
         auto now = std::chrono::steady_clock::now();
         auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - lastHelloTime).count();
         if(elapsed < helloInterval) return;
+        std::vector<uint32_t> n;
+        for(const auto& [routerID, routerINFO] : neighbours){
+            if(routerINFO.getState() != "Down"){
+                n.push_back(routerID);
+            }
+        }
         OSPFHello hello = {
-            0xFFFFFF00, routerID, helloInterval, 1, deadInterval, 0, 0,
-            {0x05060708}
+            0xFFFFFF00, routerID, helloInterval, 1, deadInterval, 0, 0, n
         };
-        socket.sendHello("224.0.0.5", 1050, hello);
+        for(const auto& target : targets){
+            socket.sendHello("224.0.0.5", 1050 + target, hello);
+        }
         lastHelloTime = now;
         std::cout << "Hello packet sent." << std::endl;
     };
@@ -142,7 +151,7 @@ private:
         lsdb[lsa.routerID] = lsa;
         for(auto const& [nID, nINFO] : neighbours){
             if(nID == routerID) continue;
-            socket.sendLSA("224.0.0.5", 1050, lsa);
+            socket.sendLSA("224.0.0.5", 1050 + nID, lsa);
             std::cout << "Flooded LSA from Router " << lsa.routerID << " to Neighbor " << nID << std::endl;
         }
     }
@@ -170,9 +179,32 @@ private:
             lsa.links.emplace_back(nID, nCost);
         }
         lsdb[lsa.routerID] = lsa;
-        socket.sendLSA("224.0.0.5", 1050, lsa);
+        for(const auto& target : targets){
+            socket.sendLSA("224.0.0.5", 1050 + target, lsa);
+        }
         lastLSATime = now;
         std::cout << "LSA packet sent." << std::endl;
+    };
+
+    void Dijkstra(const uint32_t& destination){
+        if (destination == routerID) {
+            std::cout << "Destination is the current router." << std::endl;
+            return;
+        }
+        auto cmp = [](const auto& a, const auto& b){
+            return a.first > b.first;
+        };
+        // first is cost, second is routerID
+        std::priority_queue<std::pair<uint32_t, uint32_t>, std::vector<std::pair<uint32_t, uint32_t>>, decltype(cmp)> pq(cmp);
+        std::unordered_map<uint32_t, uint32_t> distance;
+        std::unordered_map<uint32_t, uint32_t> previous;
+        std::unordered_set<uint32_t> visited;
+
+        for(const auto& [routerID, routerINFO] : lsdb){
+
+        }
+
+        // pq.push({0, routerID});
     };
 
 public:
@@ -188,6 +220,10 @@ public:
             receiveThread.join();
         }
     };
+
+    void setTargets(const std::vector<uint32_t>& target){
+        targets = target;
+    }
 
     void start(){
         std::cout << "Starting OSPF..." << std::endl;
@@ -208,6 +244,23 @@ public:
         isRunning = false;
         std::cout << "Stopping OSPF..." << std::endl;
     };
+
+    void printStatus() const {
+    std::cout << std::dec << "Router ID: " << routerID << std::endl;
+    std::cout << "Neighbors:" << std::endl;
+    for (const auto& [id, neighbor] : neighbours) {
+        std::cout << "  Neighbor ID: " << id << ", State: " << neighbor.getState() << std::endl;
+    }
+
+    std::cout << "LSDB:" << std::endl;
+    for (const auto& [id, lsa] : lsdb) {
+        std::cout << "  LSA from Router " << id << ": ";
+        for (const auto& link : lsa.links) {
+            std::cout << "(" << link.first << ", Cost: " << link.second << ") ";
+        }
+        std::cout << std::endl;
+    }
+}
 
 };
 
