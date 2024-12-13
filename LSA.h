@@ -10,6 +10,7 @@ struct LSA
     uint32_t routerID;
     uint32_t sequenceNumber;
     uint16_t age;
+    // first is ID and second is cost
     std::vector<std::pair<uint32_t, uint32_t>> links;
     std::vector<uint8_t> serialize() const{
         size_t fixedPartSize = sizeof(LSA) - sizeof(std::vector<std::pair<uint32_t, uint32_t>>);

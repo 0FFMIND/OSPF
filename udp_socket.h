@@ -5,6 +5,7 @@
 
 #include "OSPFHello.h"
 #include "LSA.h"
+#include "Logger.h"
 
 enum packet_type{
     OSPFHELLO_PACKET = 0,

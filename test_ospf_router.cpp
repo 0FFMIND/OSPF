@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "OSPF.h"
+#include "Logger.h"
 
 int main(void){
     size_t routerCount;
@@ -14,6 +15,9 @@ int main(void){
     // current routerID - vector neighbour ID
     std::unordered_map<uint32_t, std::vector<uint32_t>> topology;
     
+    Logger::getInstance().enableLog("ROUTER");
+    Logger::getInstance().enableLog("DIJKSTRA");
+
     for(uint32_t i = 1; i <= routerCount; i++){
         routers[i] = new OSPF(i, 10, 40, 1050 + i);
     }
@@ -58,7 +62,7 @@ int main(void){
     while (true) {
         auto& ospf = *routers[observer];
         ospf.printStatus();
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::this_thread::sleep_for(std::chrono::seconds(10));
     }
 
     for (auto& worker : workers) {

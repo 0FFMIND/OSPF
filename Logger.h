@@ -26,7 +26,13 @@ public:
         std::unique_lock<std::mutex> lock(mtx);
         logLevels[module] = false;
     }
-    void Log()
+    void log(const std::string& module, const std::string& message){
+        std::unique_lock<std::mutex> lock(mtx);
+        if(!logLevels.count(module) || logLevels[module] == false){
+            return;
+        }
+        std::cout << "[" << module << "] " << message << std::endl;
+    }
 };
 
 #endif

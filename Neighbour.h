@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <chrono>
+#include "Logger.h"
 
 enum Neighbour_State{
     Down,
@@ -42,7 +43,7 @@ public:
     Neighbour(uint32_t id, uint16_t prio) : routerID(id), state(Down), priority(prio), lastHelloTime(std::chrono::steady_clock::now()){}
 
     Neighbour() = default;
-    
+
     std::string getState() const{
         return stateToString(state);
     };
@@ -51,7 +52,8 @@ public:
         Neighbour_State newstate = pharseState(newState);
         if(newstate != state){
             state = newstate;
-            std::cout << "Neighbour " << routerID << " state changed to " << stateToString(state) << std::endl;
+             Logger::getInstance().log("NEIGHBOUR", 
+                "Neighbour " + std::to_string(routerID) + " state changed to " + stateToString(state));
         }
     };
 
